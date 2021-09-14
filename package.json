@@ -4,8 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "npm run build && node src/index.js",
-        "build": "tsc src/services/*.ts",
+        "start": "node src/index.js",
+        "postinstall": "tsc src/services/*.ts",
         "prettier": "prettier -c \"**/*.js\"",
         "prettier:write": "prettier -w \"**/*.js\""
     },
