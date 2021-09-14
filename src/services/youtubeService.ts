@@ -1,6 +1,6 @@
 const { YTSearcher } = require('ytsearcher');
 const ytdl = require("ytdl-core");
-const { apikey } = require("../config.json");
+const apikey = process.env.APIKEY;
 
 
 const searcher = new YTSearcher(apikey);

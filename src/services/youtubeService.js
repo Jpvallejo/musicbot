@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var YTSearcher = require('ytsearcher').YTSearcher;
 var ytdl = require("ytdl-core");
-var apikey = require("../config.json").apikey;
+var apikey = process.env.APIKEY;
 var searcher = new YTSearcher(apikey);
 var YoutubeService = /** @class */ (function () {
     function YoutubeService() {

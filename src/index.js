@@ -1,9 +1,11 @@
 const Discord = require("discord.js");
-const { prefix, token } = require("./config.json");
-const ytdl = require("ytdl-core");
+require('dotenv').config()
 const { QueueService } = require("./services/queueService");
 const { default: PlayService } = require("./services/playService");
 const { YoutubeService } = require("./services/youtubeService");
+
+const prefix = process.env.PREFIX;
+const token = process.env.TOKEN;
 
 const client = new Discord.Client();
 
