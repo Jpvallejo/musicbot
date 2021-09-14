@@ -1,0 +1,35 @@
+{
+    "name": "musicbot",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "npm run build && node src/index.js",
+        "build": "tsc src/services/*.ts",
+        "prettier": "prettier -c \"**/*.js\"",
+        "prettier:write": "prettier -w \"**/*.js\""
+    },
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@discordjs/opus": "^0.6.0",
+        "discord.js": "^12.5.3",
+        "ffmpeg": "0.0.4",
+        "ffmpeg-static": "^4.4.0",
+        "fluent-ffmpeg": "^2.1.2",
+        "webpack": "^5.52.1",
+        "ytdl-core": "^4.9.1",
+        "ytsearcher": "^1.2.4"
+    },
+    "devDependencies": {
+        "webpack-cli": "^4.8.0"
+    },
+    "browser": {
+        "http": false,
+        "https": false,
+        "net": false,
+        "path": false,
+        "stream": false,
+        "tls": false
+    }
+}
