@@ -1,6 +1,3 @@
-import { QueueService } from "./queueService";
-import { YoutubeService } from "./youtubeService";
-
 var distube;
 export default class PlayService {
 
