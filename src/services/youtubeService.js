@@ -36,8 +36,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.YoutubeService = void 0;
 var YTSearcher = require('ytsearcher').YTSearcher;
-var ytdl = require("ytdl-core");
+var ytdl = require("discord-ytdl-core");
 var apikey = process.env.APIKEY;
 var searcher = new YTSearcher(apikey);
 var YoutubeService = /** @class */ (function () {
@@ -56,7 +57,11 @@ var YoutubeService = /** @class */ (function () {
         });
     };
     YoutubeService.getVideo = function (url) {
-        return ytdl(url);
+        return ytdl(url, {
+            filter: "audioonly",
+            fmt: "mp3",
+            encoderArgs: ['-af', 'bass=g=10']
+        });
     };
     YoutubeService.getSongInfo = function (songString) {
         return __awaiter(this, void 0, void 0, function () {
@@ -78,6 +83,14 @@ var YoutubeService = /** @class */ (function () {
                                 url: songInfo.videoDetails.video_url
                             }];
                 }
+            });
+        });
+    };
+    YoutubeService.seekVideo = function (video) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                video.seek();
+                return [2 /*return*/];
             });
         });
     };

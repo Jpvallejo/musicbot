@@ -57,7 +57,9 @@ export class QueueService {
     }
 
     static playConnection(id, song) {
-        return QueueService.get(id).connection
+        const serverQueue = QueueService.get(id);
+        serverQueue.currentSong = song
+        return serverQueue.connection
             .play(song);
     }
 
@@ -97,7 +99,7 @@ export class QueueService {
         serverQueue.loopAll = false;
         return serverQueue.loopOne;
     }
-    
+
     static turnLoopOff(id) {
         const serverQueue = this.get(id);
         serverQueue.loopOne = false;
@@ -115,5 +117,9 @@ export class QueueService {
     static getRemainingSongs(id) {
         const serverQueue = this.get(id);
         return serverQueue.songs.slice(1, serverQueue.songs.length);
+    }
+
+    static getCurrentSong(id) {
+        return this.get(id).currentSong;
     }
 }

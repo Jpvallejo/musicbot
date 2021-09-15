@@ -1,84 +1,92 @@
 import { QueueService } from "./queueService";
 import { YoutubeService } from "./youtubeService";
+
+var distube;
 export default class PlayService {
 
-    static async play(guild, song) {
-
-        if (!song) {
-            QueueService.exit(guild.id);
-            return;
-        }
-
-        const dispatcher = QueueService.playConnection(guild.id, YoutubeService.getVideo(song.url))
-            .on("finish", () => {
-                if(QueueService.loopAllIsEnabled(guild.id)){
-                    QueueService.addSong(guild.id,QueueService.getSong(guild.id))
-                    QueueService.shiftSong(guild.id);
-                }
-                else if(!QueueService.loopOneIsEnabled(guild.id)){
-                    QueueService.shiftSong(guild.id);
-                }
-                PlayService.play(guild, QueueService.getSong(guild.id));
-            })
-            .on("error", error => console.error(error));
-        dispatcher.setVolumeLogarithmic(QueueService.getVolume(guild.id) / 5);
-        QueueService.sendMessage(guild.id, `Now playing: **${song.title}**`);
+    static async play(message, song) {
+        console.log(distube);
+        distube.isPaused(message) && !song ?
+            distube.resume(message) && message.react("⏯️") :
+            distube.play(message, song);
     }
 
-    static async skip(message, id) {
+    static async skip(message) {
         if (!message.member.voice.channel)
             return message.channel.send(
                 "You have to be in a voice channel to stop the music!"
             );
-        if (!QueueService.hasQueue(id))
-            return message.channel.send("There is no song that I could skip!");
-        QueueService.skip(id);
+        distube.skip(message);
+        message.react("⏭️");
     }
 
-    static async stop(message, id) {
+    static async stop(message) {
         if (!message.member.voice.channel)
             return message.channel.send(
                 "You have to be in a voice channel to stop the music!"
             );
 
-        if (!QueueService.hasQueue(id))
-            return message.channel.send("There is no song that I could stop!");
-
-        QueueService.stop(id);
+        distube.stop(message);
+        message.react("⏹️");
     }
 
-    static loop(message, id) {
-        var command = message.content.split(" ")[1];
-        switch (command) {
-            case 'all':
-                if (QueueService.switchLoopAll(id))
-                    message.channel.send("Loop all has been turned on");
-                else
-                    message.channel.send("Loop all has been turned off");
-                break;
-            case 'one':
-                if (QueueService.switchLoopOne(id))
-                    message.channel.send("Loop one has been turned on");
-                else
-                    message.channel.send("Loop one has been turned off");
-                break;
-            case 'off':
-                QueueService.turnLoopOff(id);
-                message.channel.send("Loop has been turned off");
-                break;
-            default:
-                message.channel.send("Please specify what loop you want. [one/all/off]");
+    static loop(message, mode) {
+        const loopModes = {
+            "off": 0,
+            "one": 1,
+            "all": 2
         }
+        if (!loopModes.hasOwnProperty(mode)) {
+            return message.channel.send(
+                "Please send a valid Loop mode. [off | one | all]"
+            );
+        }
+        distube.setRepeatMode(message, loopModes[mode])
     }
 
-    static queue(message, id) {
-        var nowPlaying = QueueService.getSong(id);
-        var qMSg = `Now Playing: ${nowPlaying.title}\n ------------------------------------ \n`;
-        const songList = QueueService.getRemainingSongs(id);
-        songList.forEach((song, i) => {
-            qMSg += `${i+1}. ${song.title}\n`;
-        });
-        message.channel.send("```" + qMSg + "```");
+    static queue(message) {
+        let queue = distube.getQueue(message);
+        message.channel.send('Current queue:\n' + queue.songs.map((song, id) =>
+            `**${id + 1}**. ${song.name} - \`${song.formattedDuration}\``
+        ).slice(0, 10).join("\n"));
     }
 
+    static seek(message, seconds) {
+        const queue = distube.getQueue(message);
+        let seekTime = seconds * 1000;
+        if (seekTime > queue.songs[0].duration) {
+            seekTime = queue.songs[0].duration - 1;
+        }
+        distube.seek(message, seekTime)
+    }
+
+    static jumpSong(message, seconds) {
+        const queue = distube.getQueue(message);
+        let seekTime = queue.currentTime + seconds * 1000;
+        console.log(seekTime);
+        console.log(queue.songs[0].duration)
+        if (seekTime >= queue.songs[0].duration * 1000) {
+            seekTime = queue.songs[0].duration - 1000;
+        }
+        distube.seek(message, seekTime);
+        const emoji = seconds > 0 ? "⏩" : "⏪";
+        message.react(emoji);
+    }
+
+    static jump(message, position) {
+        distube.jump(message, position);
+    }
+
+    static pause(message) {
+        distube.pause(message);
+        message.react("⏸️")
+    }
+
+    static shuffle(message) {
+        distube.shuffle(message);
+    }
+
+    static setDistube(elem) {
+        distube = elem;
+    }
 }

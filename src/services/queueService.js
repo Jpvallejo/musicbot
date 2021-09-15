@@ -1,5 +1,6 @@
 "use strict";
 exports.__esModule = true;
+exports.QueueService = void 0;
 var queue = new Map();
 var QueueService = /** @class */ (function () {
     function QueueService() {
@@ -53,7 +54,9 @@ var QueueService = /** @class */ (function () {
         serverQueue.connection.dispatcher.end();
     };
     QueueService.playConnection = function (id, song) {
-        return QueueService.get(id).connection
+        var serverQueue = QueueService.get(id);
+        serverQueue.currentSong = song;
+        return serverQueue.connection
             .play(song);
     };
     QueueService.shiftSong = function (id) {
@@ -100,6 +103,9 @@ var QueueService = /** @class */ (function () {
     QueueService.getRemainingSongs = function (id) {
         var serverQueue = this.get(id);
         return serverQueue.songs.slice(1, serverQueue.songs.length);
+    };
+    QueueService.getCurrentSong = function (id) {
+        return this.get(id).currentSong;
     };
     return QueueService;
 }());
