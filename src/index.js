@@ -3,11 +3,14 @@ require('dotenv').config()
 const { QueueService } = require("./services/queueService");
 const { default: PlayService } = require("./services/playService");
 const { YoutubeService } = require("./services/youtubeService");
+const Distube = require("distube");
 
 const prefix = process.env.PREFIX;
 const token = process.env.TOKEN;
 
 const client = new Discord.Client();
+const distube = new Distube(client, { searchSongs: false, emitNewSongOnly: true });
+PlayService.setDistube(distube);
 
 const queue = new Map();
 
@@ -29,26 +32,39 @@ client.on("message", async message => {
 
     const args = message.content.split(" ");
 
-    const filteredMessage = args[0].substr(1, args[0].length);
-    console.log(filteredMessage);
-    switch (filteredMessage) {
+    const cmd = args[0].substr(1, args[0].length);
+    console.log(cmd);
+    switch (cmd) {
         case 'play':
         case 'p':
             execute(message, message.guild.id);
             break;
         case 'skip':
         case 's':
-            PlayService.skip(message, message.guild.id);
+            PlayService.skip(message);
             break;
         case 'stop':
-            PlayService.stop(message, message.guild.id);
+            PlayService.stop(message);
             break;
         case 'loop':
-            PlayService.loop(message, message.guild.id);
+            PlayService.loop(message, args[1]);
             break;
         case 'queue':
         case 'q':
-            PlayService.queue(message, message.guild.id);
+            PlayService.queue(message);
+            break;
+        case 'fastforward':
+        case 'ff':
+            PlayService.jumpSong(message, Number(args[1]));
+            break;
+        case 'rewind':
+            PlayService.jumpSong(message, -1 * Number(args[1]));
+            break;
+        case 'pause':
+            PlayService.pause(message);
+            break;
+        case 'shuffle':
+            PlayService.shuffle(message);
             break;
         default:
             message.channel.send("You need to enter a valid command!");
@@ -73,22 +89,28 @@ async function execute(message, id) {
         );
     }
     QueueService.setChannels(id, message.channel, voiceChannel);
-
-    const song = await YoutubeService.getSongInfo(requestedSong);
-    if (!QueueService.hasSongsQueue(id)) {
-        QueueService.addSong(id, song);
-        try {
-            var connection = await voiceChannel.join();
-            QueueService.addConnection(id, connection);
-            PlayService.play(message.guild, QueueService.getSong(id));
-        } catch (err) {
-            console.log(err);
-            queue.delete(message.guild.id);
-            return message.channel.send(err);
-        }
-    } else {
-        QueueService.addSong(id, song);
-        return message.channel.send(`${song.title} has been added to the queue!`);
-    }
+    PlayService.play(message, requestedSong);
 }
+// Queue status template
+const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
+
+
+distube
+    .on("playSong", (message, queue, song) => message.channel.send(
+        `Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user}\n${status(queue)}`
+    ))
+    .on("addSong", (message, queue, song) => message.channel.send(
+        `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
+    ))
+    .on("playList", (message, queue, playlist, song) => message.channel.send(
+        `Play \`${playlist.name}\` playlist (${playlist.songs.length} songs).\nRequested by: ${song.user}\nNow playing \`${song.name}\` - \`${song.formattedDuration}\`\n${status(queue)}`
+    ))
+    .on("addList", (message, queue, playlist) => message.channel.send(
+        `Added \`${playlist.name}\` playlist (${playlist.songs.length} songs) to queue\n${status(queue)}`
+    ))
+    .on("error", (message, e) => {
+        console.error(e)
+        message.channel.send("An error encountered: " + e);
+    });
+
 client.login(token);

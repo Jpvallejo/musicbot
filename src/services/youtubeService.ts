@@ -1,5 +1,5 @@
 const { YTSearcher } = require('ytsearcher');
-const ytdl = require("ytdl-core");
+const ytdl = require("discord-ytdl-core");
 const apikey = process.env.APIKEY;
 
 
@@ -11,19 +11,27 @@ export class YoutubeService {
     return await searcher.search(query);
   }
 
-  static getVideo(url){
-    return ytdl(url);
+  static getVideo(url) {
+    return ytdl(url, {
+      filter: "audioonly",
+      fmt: "mp3",
+      encoderArgs: ['-af', 'bass=g=10']
+    });
   }
 
   static async getSongInfo(songString) {
     var songUrl = songString;
-    if(!songString.startsWith("http") && !songString.startsWith("www")) {
+    if (!songString.startsWith("http") && !songString.startsWith("www")) {
       songUrl = (await YoutubeService.search(songString)).first.url;
     }
     const songInfo = await ytdl.getInfo(songUrl);
     return {
-        title: songInfo.videoDetails.title,
-        url: songInfo.videoDetails.video_url,
+      title: songInfo.videoDetails.title,
+      url: songInfo.videoDetails.video_url,
     };
+  }
+
+  static async seekVideo(video) {
+    video.seek()
   }
 }

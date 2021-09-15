@@ -36,92 +36,92 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var queueService_1 = require("./queueService");
-var youtubeService_1 = require("./youtubeService");
+var distube;
 var PlayService = /** @class */ (function () {
     function PlayService() {
     }
-    PlayService.play = function (guild, song) {
+    PlayService.play = function (message, song) {
         return __awaiter(this, void 0, void 0, function () {
-            var dispatcher;
             return __generator(this, function (_a) {
-                if (!song) {
-                    queueService_1.QueueService.exit(guild.id);
-                    return [2 /*return*/];
-                }
-                dispatcher = queueService_1.QueueService.playConnection(guild.id, youtubeService_1.YoutubeService.getVideo(song.url))
-                    .on("finish", function () {
-                    if (queueService_1.QueueService.loopAllIsEnabled(guild.id)) {
-                        queueService_1.QueueService.addSong(guild.id, queueService_1.QueueService.getSong(guild.id));
-                        queueService_1.QueueService.shiftSong(guild.id);
-                    }
-                    else if (!queueService_1.QueueService.loopOneIsEnabled(guild.id)) {
-                        queueService_1.QueueService.shiftSong(guild.id);
-                    }
-                    PlayService.play(guild, queueService_1.QueueService.getSong(guild.id));
-                })
-                    .on("error", function (error) { return console.error(error); });
-                dispatcher.setVolumeLogarithmic(queueService_1.QueueService.getVolume(guild.id) / 5);
-                queueService_1.QueueService.sendMessage(guild.id, "Now playing: **" + song.title + "**");
+                console.log(distube);
+                distube.isPaused(message) && !song ?
+                    distube.resume(message) && message.react("⏯️") :
+                    distube.play(message, song);
                 return [2 /*return*/];
             });
         });
     };
-    PlayService.skip = function (message, id) {
+    PlayService.skip = function (message) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (!message.member.voice.channel)
                     return [2 /*return*/, message.channel.send("You have to be in a voice channel to stop the music!")];
-                if (!queueService_1.QueueService.hasQueue(id))
-                    return [2 /*return*/, message.channel.send("There is no song that I could skip!")];
-                queueService_1.QueueService.skip(id);
+                distube.skip(message);
+                message.react("⏭️");
                 return [2 /*return*/];
             });
         });
     };
-    PlayService.stop = function (message, id) {
+    PlayService.stop = function (message) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (!message.member.voice.channel)
                     return [2 /*return*/, message.channel.send("You have to be in a voice channel to stop the music!")];
-                if (!queueService_1.QueueService.hasQueue(id))
-                    return [2 /*return*/, message.channel.send("There is no song that I could stop!")];
-                queueService_1.QueueService.stop(id);
+                distube.stop(message);
+                message.react("⏹️");
                 return [2 /*return*/];
             });
         });
     };
-    PlayService.loop = function (message, id) {
-        var command = message.content.split(" ")[1];
-        switch (command) {
-            case 'all':
-                if (queueService_1.QueueService.switchLoopAll(id))
-                    message.channel.send("Loop all has been turned on");
-                else
-                    message.channel.send("Loop all has been turned off");
-                break;
-            case 'one':
-                if (queueService_1.QueueService.switchLoopOne(id))
-                    message.channel.send("Loop one has been turned on");
-                else
-                    message.channel.send("Loop one has been turned off");
-                break;
-            case 'off':
-                queueService_1.QueueService.turnLoopOff(id);
-                message.channel.send("Loop has been turned off");
-                break;
-            default:
-                message.channel.send("Please specify what loop you want. [one/all/off]");
+    PlayService.loop = function (message, mode) {
+        var loopModes = {
+            "off": 0,
+            "one": 1,
+            "all": 2
+        };
+        if (!loopModes.hasOwnProperty(mode)) {
+            return message.channel.send("Please send a valid Loop mode. [off | one | all]");
         }
+        distube.setRepeatMode(message, loopModes[mode]);
     };
-    PlayService.queue = function (message, id) {
-        var nowPlaying = queueService_1.QueueService.getSong(id);
-        var qMSg = "Now Playing: " + nowPlaying.title + "\n ------------------------------------ \n";
-        var songList = queueService_1.QueueService.getRemainingSongs(id);
-        songList.forEach(function (song, i) {
-            qMSg += i + 1 + ". " + song.title + "\n";
-        });
-        message.channel.send("```" + qMSg + "```");
+    PlayService.queue = function (message) {
+        var queue = distube.getQueue(message);
+        message.channel.send('Current queue:\n' + queue.songs.map(function (song, id) {
+            return "**" + (id + 1) + "**. " + song.name + " - `" + song.formattedDuration + "`";
+        }).slice(0, 10).join("\n"));
+    };
+    PlayService.seek = function (message, seconds) {
+        var queue = distube.getQueue(message);
+        var seekTime = seconds * 1000;
+        if (seekTime > queue.songs[0].duration) {
+            seekTime = queue.songs[0].duration - 1;
+        }
+        distube.seek(message, seekTime);
+    };
+    PlayService.jumpSong = function (message, seconds) {
+        var queue = distube.getQueue(message);
+        var seekTime = queue.currentTime + seconds * 1000;
+        console.log(seekTime);
+        console.log(queue.songs[0].duration);
+        if (seekTime >= queue.songs[0].duration * 1000) {
+            seekTime = queue.songs[0].duration - 1000;
+        }
+        distube.seek(message, seekTime);
+        var emoji = seekTime > 0 ? "⏩" : "⏪";
+        message.react(emoji);
+    };
+    PlayService.jump = function (message, position) {
+        distube.jump(message, position);
+    };
+    PlayService.pause = function (message) {
+        distube.pause(message);
+        message.react("⏸️");
+    };
+    PlayService.shuffle = function (message) {
+        distube.shuffle(message);
+    };
+    PlayService.setDistube = function (elem) {
+        distube = elem;
     };
     return PlayService;
 }());
