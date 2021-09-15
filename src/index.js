@@ -1,8 +1,6 @@
 const Discord = require("discord.js");
 require('dotenv').config()
-const { QueueService } = require("./services/queueService");
 const { default: PlayService } = require("./services/playService");
-const { YoutubeService } = require("./services/youtubeService");
 const Distube = require("distube");
 
 const prefix = process.env.PREFIX;

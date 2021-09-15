@@ -107,7 +107,7 @@ var PlayService = /** @class */ (function () {
             seekTime = queue.songs[0].duration - 1000;
         }
         distube.seek(message, seekTime);
-        var emoji = seekTime > 0 ? "⏩" : "⏪";
+        var emoji = seconds > 0 ? "⏩" : "⏪";
         message.react(emoji);
     };
     PlayService.jump = function (message, position) {
