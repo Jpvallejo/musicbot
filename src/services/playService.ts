@@ -207,4 +207,10 @@ export default class PlayService {
                 message.channel.send("An error encountered: " + e)
             })
     }
+
+    static pomo(message, song) {
+        message.channel.send(",pjoin")
+        message.channel.send(",pstart Basic study session")
+        this.play(message, song)
+    }
 }
