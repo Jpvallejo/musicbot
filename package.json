@@ -6,8 +6,8 @@
     "scripts": {
         "start": "npm run build && node src/index.js",
         "start:windows": "npm run build:windows | node src/index.js",
-        "build": "tsc src/services/*.ts",
-        "build:windows": "tsc src/services/playService.ts",
+        "build": "tsc src/services/*.ts src/index.ts",
+        "build:windows": "tsc src/index.ts src/services/playService.ts",
         "prettier": "prettier -c \"**/*.js\"",
         "prettier:write": "prettier -w \"**/*.js\""
     },

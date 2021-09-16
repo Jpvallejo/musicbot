@@ -1,0 +1,18 @@
+{
+    "acceptedMethods": [
+        "p",
+        "s",
+        "q",
+        "rr",
+        "play",
+        "skip",
+        "stop",
+        "loop",
+        "queue",
+        "fastforward",
+        "ff",
+        "rewind",
+        "pause",
+        "shuffle"
+    ]
+}

@@ -44,9 +44,9 @@ var PlayService = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 console.log(distube);
-                distube.isPaused(message) && !song ?
-                    distube.resume(message) && message.react("⏯️") :
-                    distube.play(message, song);
+                distube.isPaused(message) && !song
+                    ? distube.resume(message) && message.react("⏯️")
+                    : distube.play(message, song);
                 return [2 /*return*/];
             });
         });
@@ -75,9 +75,9 @@ var PlayService = /** @class */ (function () {
     };
     PlayService.loop = function (message, mode) {
         var loopModes = {
-            "off": 0,
-            "one": 1,
-            "all": 2
+            off: 0,
+            one: 1,
+            all: 2
         };
         if (!loopModes.hasOwnProperty(mode)) {
             return message.channel.send("Please send a valid Loop mode. [off | one | all]");
@@ -86,9 +86,13 @@ var PlayService = /** @class */ (function () {
     };
     PlayService.queue = function (message) {
         var queue = distube.getQueue(message);
-        message.channel.send('Current queue:\n' + queue.songs.map(function (song, id) {
-            return "**" + (id + 1) + "**. " + song.name + " - `" + song.formattedDuration + "`";
-        }).slice(0, 10).join("\n"));
+        message.channel.send("Current queue:\n" +
+            queue.songs
+                .map(function (song, id) {
+                return "**" + (id + 1) + "**. " + song.name + " - `" + song.formattedDuration + "`";
+            })
+                .slice(0, 10)
+                .join("\n"));
     };
     PlayService.seek = function (message, seconds) {
         var queue = distube.getQueue(message);
@@ -110,6 +114,12 @@ var PlayService = /** @class */ (function () {
         var emoji = seconds > 0 ? "⏩" : "⏪";
         message.react(emoji);
     };
+    PlayService.fastforward = function (message, seconds) {
+        this.jumpSong(message, Number(seconds));
+    };
+    PlayService.rewind = function (message, seconds) {
+        this.jumpSong(message, -1 * Number(seconds[1]));
+    };
     PlayService.jump = function (message, position) {
         distube.jump(message, position);
     };
@@ -122,6 +132,30 @@ var PlayService = /** @class */ (function () {
     };
     PlayService.setDistube = function (elem) {
         distube = elem;
+        var status = function (queue) {
+            return "Volume: `" + queue.volume + "%` | Filter: `" + (queue.filter || "Off") + "` | Loop: `" + (queue.repeatMode
+                ? queue.repeatMode == 2
+                    ? "All Queue"
+                    : "This Song"
+                : "Off") + "` | Autoplay: `" + (queue.autoplay ? "On" : "Off") + "`";
+        };
+        distube
+            .on("playSong", function (message, queue, song) {
+            return message.channel.send("Playing `" + song.name + "` - `" + song.formattedDuration + "`\nRequested by: " + song.user + "\n" + status(queue));
+        })
+            .on("addSong", function (message, queue, song) {
+            return message.channel.send("Added " + song.name + " - `" + song.formattedDuration + "` to the queue by " + song.user);
+        })
+            .on("playList", function (message, queue, playlist, song) {
+            return message.channel.send("Play `" + playlist.name + "` playlist (" + playlist.songs.length + " songs).\nRequested by: " + song.user + "\nNow playing `" + song.name + "` - `" + song.formattedDuration + "`\n" + status(queue));
+        })
+            .on("addList", function (message, queue, playlist) {
+            return message.channel.send("Added `" + playlist.name + "` playlist (" + playlist.songs.length + " songs) to queue\n" + status(queue));
+        })
+            .on("error", function (message, e) {
+            console.error(e);
+            message.channel.send("An error encountered: " + e);
+        });
     };
     return PlayService;
 }());
