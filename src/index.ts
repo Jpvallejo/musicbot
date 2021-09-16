@@ -62,7 +62,6 @@ client.on("message", async (message) => {
             cmd = "rewind"
             break
     }
-    console.log(cmd)
     PlayService[cmd](message, cmdString)
 })
 

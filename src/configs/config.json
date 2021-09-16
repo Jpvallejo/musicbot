@@ -15,6 +15,7 @@
         "pause",
         "shuffle",
         "jump",
-        "clear"
+        "clear",
+        "pomo"
     ]
 }
