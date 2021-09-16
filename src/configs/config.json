@@ -13,6 +13,8 @@
         "ff",
         "rewind",
         "pause",
-        "shuffle"
+        "shuffle",
+        "jump",
+        "clear"
     ]
 }

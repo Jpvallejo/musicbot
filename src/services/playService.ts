@@ -1,11 +1,28 @@
+const spotifyToYT = require("spotify-to-yt")
 var distube
 
 export default class PlayService {
     static async play(message, song) {
-        console.log(distube)
+        if (song && song.includes("spotify")) {
+            if (song.includes("playlist")) {
+                const result = await spotifyToYT.playListGet(song)
+                console.log(result);
+                distube.playCustomPlaylist(message, result.songs, {
+                    name: result.info.name,
+                    thumbnail: result.info.images[0].url,
+                    url: result.info.external_urls.spotify,
+                })
+                message.react("✅")
+                return
+            }
+            console.log("3")
+            song = (await spotifyToYT.trackGet(song)).url
+            console.log(song)
+        }
+
         distube.isPaused(message) && !song
             ? distube.resume(message) && message.react("⏯️")
-            : distube.play(message, song)
+            : distube.play(message, song) && message.react("✅")
     }
 
     static async skip(message) {
@@ -13,8 +30,12 @@ export default class PlayService {
             return message.channel.send(
                 "You have to be in a voice channel to stop the music!"
             )
-        distube.skip(message)
-        message.react("⏭️")
+        try {
+            distube.skip(message)
+            message.react("⏭️")
+        } catch (err) {
+            return message.channel.send("There is nothing playing right now")
+        }
     }
 
     static async stop(message) {
@@ -22,9 +43,12 @@ export default class PlayService {
             return message.channel.send(
                 "You have to be in a voice channel to stop the music!"
             )
-
-        distube.stop(message)
-        message.react("⏹️")
+        try {
+            distube.stop(message)
+            message.react("⏹️")
+        } catch (err) {
+            return message.channel.send("There is nothing playing right now")
+        }
     }
 
     static loop(message, mode) {
@@ -33,16 +57,29 @@ export default class PlayService {
             one: 1,
             all: 2,
         }
+        const loopEmojis = {
+            off: "✅",
+            one: "🔂",
+            all: "🔁",
+        }
         if (!loopModes.hasOwnProperty(mode)) {
             return message.channel.send(
                 "Please send a valid Loop mode. [off | one | all]"
             )
         }
-        distube.setRepeatMode(message, loopModes[mode])
+        try {
+            distube.setRepeatMode(message, loopModes[mode])
+            message.react(loopEmojis[mode])
+        } catch (err) {
+            return message.channel.send(
+                "You have to be playing something to execute this command!"
+            )
+        }
     }
 
     static queue(message) {
         let queue = distube.getQueue(message)
+        if (!queue) return message.channel.send("The Queue is empty right now!")
         message.channel.send(
             "Current queue:\n" +
                 queue.songs
@@ -59,6 +96,10 @@ export default class PlayService {
 
     static seek(message, seconds) {
         const queue = distube.getQueue(message)
+        if (!queue)
+            return message.channel.send(
+                "You have to be playing something to execute this command!"
+            )
         let seekTime = seconds * 1000
         if (seekTime > queue.songs[0].duration) {
             seekTime = queue.songs[0].duration - 1
@@ -66,11 +107,19 @@ export default class PlayService {
         distube.seek(message, seekTime)
     }
 
+    static clear(message) {
+        const queue = distube.getQueue(message)
+        queue.songs = distube.isPaused(message) ? [] : [queue.songs[0]]
+        message.react("✅")
+    }
+
     static jumpSong(message, seconds) {
         const queue = distube.getQueue(message)
+        if (!queue)
+            return message.channel.send(
+                "You have to be playing something to execute this command!"
+            )
         let seekTime = queue.currentTime + seconds * 1000
-        console.log(seekTime)
-        console.log(queue.songs[0].duration)
         if (seekTime >= queue.songs[0].duration * 1000) {
             seekTime = queue.songs[0].duration - 1000
         }
@@ -87,16 +136,29 @@ export default class PlayService {
         this.jumpSong(message, -1 * Number(seconds[1]))
     }
     static jump(message, position) {
-        distube.jump(message, position)
+        try {
+            distube.jump(message, Number(position))
+        } catch (err) {
+            return message.channel.send("Please enter a valid song position")
+        }
     }
 
     static pause(message) {
-        distube.pause(message)
-        message.react("⏸️")
+        try {
+            distube.pause(message)
+            message.react("⏸️")
+        } catch (err) {
+            return message.channel.send("There is nothing playing right now")
+        }
     }
 
     static shuffle(message) {
-        distube.shuffle(message)
+        try {
+            distube.shuffle(message)
+            message.react("🔀")
+        } catch (err) {
+            return message.channel.send("There is nothing playing right now")
+        }
     }
 
     static setDistube(elem) {

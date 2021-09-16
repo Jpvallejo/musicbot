@@ -15,6 +15,7 @@
     "license": "MIT",
     "dependencies": {
         "@discordjs/opus": "^0.6.0",
+        "@distube/spotify": "^0.6.3",
         "discord-ytdl-core": "^5.0.4",
         "discord.js": "^12.5.3",
         "distube": "^2.8.18",
@@ -22,6 +23,7 @@
         "ffmpeg": "0.0.4",
         "ffmpeg-static": "^4.4.0",
         "fluent-ffmpeg": "^2.1.2",
+        "spotify-to-yt": "^1.0.5",
         "tsc": "^2.0.3",
         "typescript": "^4.4.3",
         "webpack": "^5.52.1",
