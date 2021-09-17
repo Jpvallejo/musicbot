@@ -16,6 +16,21 @@
         "shuffle",
         "jump",
         "clear",
-        "pomo"
-    ]
+        "pomo",
+        "help"
+    ],
+    "methodDescriptions": {
+        "p | play": "Play a song or add it to the current Queue. Resumes playing if bot is paused",
+        "pause": "Pauses the current song",
+        "s | skip": "Skip a song",
+        "stop": "Stop the bot and disconnect",
+        "ff | fastforward": "Forward a song",
+        "rr | rewind": "Rewind a song",
+        "q | queue": "Show the current queue",
+        "clear": "Clear the queue",
+        "jump": "Jump to a specific position of the queue",
+        "loop": "Enable/disable looping options",
+        "shuffle": "Shuffle the queue",
+        "help": "Show commands information"
+    }
 }

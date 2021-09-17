@@ -1,3 +1,10 @@
+import { MessageEmbed } from "discord.js"
+const { acceptedMethods, methodDescriptions } = require("../../src/configs/config.json")
+const pagination = require("discord.js-pagination")
+
+const embedColor = "#0099ff"
+const wrongColor = ""
+
 const spotifyToYT = require("spotify-to-yt")
 var distube
 
@@ -6,7 +13,7 @@ export default class PlayService {
         if (song && song.includes("spotify")) {
             if (song.includes("playlist")) {
                 const result = await spotifyToYT.playListGet(song)
-                console.log(result);
+                console.log(result)
                 distube.playCustomPlaylist(message, result.songs, {
                     name: result.info.name,
                     thumbnail: result.info.images[0].url,
@@ -80,18 +87,30 @@ export default class PlayService {
     static queue(message) {
         let queue = distube.getQueue(message)
         if (!queue) return message.channel.send("The Queue is empty right now!")
-        message.channel.send(
-            "Current queue:\n" +
-                queue.songs
-                    .map(
-                        (song, id) =>
-                            `**${id + 1}**. ${song.name} - \`${
-                                song.formattedDuration
-                            }\``
-                    )
-                    .slice(0, 10)
-                    .join("\n")
+
+        const embeds = []
+        const mappedSongs = queue.songs.map(
+            (song, id) =>
+                `**${id + 1}** [${song.name}](${song.url}) - ${
+                    song.formattedDuration
+                }`
         )
+        let k = 1
+        for (let i = 0; i < queue.songs.length; i += 20) {
+            let embed = new MessageEmbed()
+                .setColor(embedColor)
+                .setAuthor(`Queue for ${message.guild.name}`)
+                .setTitle(`Page ${k}`)
+                .setDescription(mappedSongs.slice(i, i + 19).join("\n"))
+
+            embeds.push(embed)
+
+            k++
+        }
+
+        const emojis = ["⬅️", "➡️"]
+
+        pagination(message, embeds, emojis, "20000")
     }
 
     static seek(message, seconds) {
@@ -176,21 +195,24 @@ export default class PlayService {
         distube
             .on("playSong", (message, queue, song) =>
                 message.channel.send(
-                    `Playing \`${song.name}\` - \`${
+                    new MessageEmbed()
+                .setColor(embedColor)
+                .setDescription(
+                    `Now Playing \`${song.name}\` - \`${
                         song.formattedDuration
-                    }\`\nRequested by: ${song.user}\n${status(queue)}`
-                )
+                    }\`\nRequested by: \`@${song.user.username}\` \n${status(queue)}`
+                ))
             )
             .on("addSong", (message, queue, song) =>
                 message.channel.send(
-                    `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
+                    `Added ${song.name} - \`${song.formattedDuration}\` to the queue by  \`@${song.user.username}\``
                 )
             )
             .on("playList", (message, queue, playlist, song) =>
                 message.channel.send(
                     `Play \`${playlist.name}\` playlist (${
                         playlist.songs.length
-                    } songs).\nRequested by: ${song.user}\nNow playing \`${
+                    } songs).\nRequested by:  \`@${song.user.username}\`\nNow playing \`${
                         song.name
                     }\` - \`${song.formattedDuration}\`\n${status(queue)}`
                 )
@@ -212,5 +234,16 @@ export default class PlayService {
         message.channel.send(",pjoin")
         message.channel.send(",pstart Basic study session")
         this.play(message, song)
+    }
+
+    static help(message) {
+        const embed = new MessageEmbed().setColor(embedColor)
+        .setTitle(`Help`);
+        var description = '';
+        Object.keys(methodDescriptions).forEach(function(key,index) {
+            description += `\`${key}\` \n ${methodDescriptions[key]} \n\n`
+        });
+        embed.setDescription(description);
+        message.channel.send(embed)
     }
 }
