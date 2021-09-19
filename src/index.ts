@@ -36,6 +36,7 @@ client.on("message", async (message) => {
     
     var args = message.content.split(" ")
     var cmd = args[0].substr(1, args[0].length)
+    cmd = cmd.toLowerCase()
     args = args.splice(1, args.length)
     const cmdString = args.join(" ")
 
