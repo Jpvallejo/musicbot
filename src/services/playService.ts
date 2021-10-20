@@ -1,5 +1,8 @@
 import { MessageEmbed } from "discord.js"
-const { acceptedMethods, methodDescriptions } = require("../../src/configs/config.json")
+const {
+    acceptedMethods,
+    methodDescriptions,
+} = require("../../src/configs/config.json")
 const pagination = require("discord.js-pagination")
 
 const embedColor = "#0099ff"
@@ -26,8 +29,7 @@ export default class PlayService {
             song = (await spotifyToYT.trackGet(song)).url
             console.log(song)
         }
-
-        distube.isPaused(message) && !song
+        !song
             ? distube.resume(message) && message.react("⏯️")
             : distube.play(message, song) && message.react("✅")
     }
@@ -128,7 +130,7 @@ export default class PlayService {
 
     static clear(message) {
         const queue = distube.getQueue(message)
-        queue.songs = distube.isPaused(message) ? [] : [queue.songs[0]]
+        queue.songs = queue.pause ? [] : [queue.songs[0]]
         message.react("✅")
     }
 
@@ -193,40 +195,34 @@ export default class PlayService {
                     : "Off"
             }\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``
         distube
-            .on("playSong", (message, queue, song) =>
-                message.channel.send(
-                    new MessageEmbed()
-                .setColor(embedColor)
-                .setDescription(
-                    `Now Playing \`${song.name}\` - \`${
-                        song.formattedDuration
-                    }\`\nRequested by: \`@${song.user.username}\` \n${status(queue)}`
-                ))
-            )
-            .on("addSong", (message, queue, song) =>
-                message.channel.send(
+            .on("playSong", (queue, song) => {
+                let msg = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
+                if (song.playlist)
+                    msg = `Playlist: ${song.playlist.name}\n${msg}`
+                const embed = new MessageEmbed()
+                    .setColor(embedColor)
+                    .setDescription(
+                        `${msg}\nRequested by: \`@${
+                            song.user.username
+                        }\` \n${status(queue)}`
+                    )
+                queue.textChannel.send({ embeds: [embed] })
+            })
+            .on("addSong", (queue, song) =>
+                queue.textChannel.send(
                     `Added ${song.name} - \`${song.formattedDuration}\` to the queue by  \`@${song.user.username}\``
                 )
             )
-            .on("playList", (message, queue, playlist, song) =>
-                message.channel.send(
-                    `Play \`${playlist.name}\` playlist (${
-                        playlist.songs.length
-                    } songs).\nRequested by:  \`@${song.user.username}\`\nNow playing \`${
-                        song.name
-                    }\` - \`${song.formattedDuration}\`\n${status(queue)}`
-                )
-            )
-            .on("addList", (message, queue, playlist) =>
-                message.channel.send(
+            .on("addList", (queue, playlist) =>
+                queue.textChannel.send(
                     `Added \`${playlist.name}\` playlist (${
                         playlist.songs.length
                     } songs) to queue\n${status(queue)}`
                 )
             )
-            .on("error", (message, e) => {
+            .on("error", (textChannel, e) => {
                 console.error(e)
-                message.channel.send("An error encountered: " + e)
+                textChannel.send("An error encountered: " + e)
             })
     }
 
@@ -237,13 +233,12 @@ export default class PlayService {
     }
 
     static help(message) {
-        const embed = new MessageEmbed().setColor(embedColor)
-        .setTitle(`Help`);
-        var description = '';
-        Object.keys(methodDescriptions).forEach(function(key,index) {
+        const embed = new MessageEmbed().setColor(embedColor).setTitle(`Help`)
+        var description = ""
+        Object.keys(methodDescriptions).forEach(function (key, index) {
             description += `\`${key}\` \n ${methodDescriptions[key]} \n\n`
-        });
-        embed.setDescription(description);
-        message.channel.send(embed)
+        })
+        embed.setDescription(description)
+        message.channel.send({ embeds: [embed] })
     }
 }

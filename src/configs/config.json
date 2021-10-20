@@ -32,5 +32,81 @@
         "loop": "Enable/disable looping options",
         "shuffle": "Shuffle the queue",
         "help": "Show commands information"
+    },
+    "slashCommands": {
+        "play": {
+            "description": "Play a song or add it to the current Queue. Resumes playing if bot is paused",
+            "options": [{
+                "name": "song",
+                "description": "song or playlist to reproduce",
+                "required": false
+            }]
+        },
+        "pause": {
+            "description": "Pauses the current song"
+        },
+        "skip": {
+            "description": "Skip a song"
+        },
+        "stop": {
+            "description": "Stop the bot and disconnect"
+        },
+        "fastforward": {
+            "description": "Forward a song",
+            "options": [{
+                "name": "seconds",
+                "description": "seconds to fast forward",
+                "required": true
+            }]
+        },
+        "rewind": {
+            "description": "Rewind a song",
+            "options": [{
+                "name": "seconds",
+                "description": "seconds to rewind",
+                "required": true
+            }]
+        },
+        "queue": {
+            "description": "Show the current queue"
+        },
+        "clear": {
+            "description": "Clear the queue"
+        },
+        "jump": {
+            "description": "Jump to a specific position of the queue",
+            "options": [{
+                "name": "position",
+                "description": "position of the queue to jump",
+                "required": true
+            }]
+        },
+        "loop": {
+            "description": "Enable/disable looping options",
+            "options": [{
+                "name": "option",
+                "description": "loop option",
+                "required": true,
+                "choices": [{
+                        "name": "one",
+                        "value": "one"
+                    },
+                    {
+                        "name": "all",
+                        "value": "all"
+                    },
+                    {
+                        "name": "off",
+                        "value": "off"
+                    }
+                ]
+            }]
+        },
+        "shuffle": {
+            "description": "Shuffle the queue"
+        },
+        "help": {
+            "description": "Show commands information"
+        }
     }
 }

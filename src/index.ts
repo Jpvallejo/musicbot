@@ -1,19 +1,22 @@
+import SlashCommandsService from "./services/slashCommandsService"
+
 const { acceptedMethods } = require("../src/configs/config.json")
 const Discord = require("discord.js")
 require("dotenv").config()
 const { default: PlayService } = require("./services/playService")
-const Distube = require("distube")
-
+const { DisTube } = require("distube")
 
 const prefix = process.env.PREFIX
 const token = process.env.TOKEN
 
-const client = new Discord.Client()
-const distube = new Distube(client, {
-    searchSongs: false,
+const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILD_VOICE_STATES] })
+const distube = new DisTube(client, {
+    searchSongs: 0,
     emitNewSongOnly: true,
 })
 PlayService.setDistube(distube)
+
+//SlashCommandsService.createSlashCommands(client)
 
 const queue = new Map()
 
@@ -33,7 +36,7 @@ client.on("message", async (message) => {
     if (message.author.bot) return
     if (!message.content.startsWith(prefix)) return
     if (!checkPermissions(message)) return
-    
+
     var args = message.content.split(" ")
     var cmd = args[0].substr(1, args[0].length)
     args = args.splice(1, args.length)
@@ -63,6 +66,20 @@ client.on("message", async (message) => {
             break
     }
     PlayService[cmd](message, cmdString)
+})
+
+client.ws.on("INTERACTION_CREATE", async (interaction) => {
+    console.log(typeof interaction)
+    console.log(interaction)
+    interaction = {
+        ...interaction,
+        channel: await client.channels.fetch(interaction.channel_id),
+    }
+    const command = interaction.data.name.toLowerCase()
+    let args = interaction.data.options
+    args = args !== undefined ? args.join(" ") : ""
+
+    PlayService[command](interaction, args)
 })
 
 function checkPermissions(message) {
