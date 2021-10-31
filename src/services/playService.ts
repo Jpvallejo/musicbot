@@ -3,7 +3,7 @@ const {
     acceptedMethods,
     methodDescriptions,
 } = require("../../src/configs/config.json")
-const pagination = require("discord.js-pagination")
+import * as pagination from "../services/paginationService"
 
 const embedColor = "#0099ff"
 const wrongColor = ""
@@ -112,7 +112,7 @@ export default class PlayService {
 
         const emojis = ["⬅️", "➡️"]
 
-        pagination(message, embeds, emojis, "20000")
+        pagination(message, embeds, emojis, 20000)
     }
 
     static seek(message, seconds) {
