@@ -186,6 +186,7 @@ export default class PlayService {
             distube.setVolume(Number(volume))
             message.channel.send(`Volume set to ${volume}%`)
         } catch (err) {
+            console.log(err);
             return message.channel.send("There is nothing playing right now")
         }
     }
