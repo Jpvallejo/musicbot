@@ -3,7 +3,7 @@ const {
     acceptedMethods,
     methodDescriptions,
 } = require("../../src/configs/config.json")
-import * as pagination from "../services/paginationService"
+const pagination = require("./paginationService")
 
 const embedColor = "#0099ff"
 const wrongColor = ""
