@@ -17,7 +17,8 @@
         "jump",
         "clear",
         "pomo",
-        "help"
+        "help",
+        "volume"
     ],
     "methodDescriptions": {
         "p | play": "Play a song or add it to the current Queue. Resumes playing if bot is paused",
@@ -31,7 +32,8 @@
         "jump": "Jump to a specific position of the queue",
         "loop": "Enable/disable looping options",
         "shuffle": "Shuffle the queue",
-        "help": "Show commands information"
+        "help": "Show commands information",
+        "volume": "Set volume to indicated level"
     },
     "slashCommands": {
         "play": {
