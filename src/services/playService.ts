@@ -43,7 +43,7 @@ export default class PlayService {
             distube.skip(message)
             message.react("⏭️")
         } catch (err) {
-            return message.channel.send("There is nothing playing right now")
+            return message.channel.send("There is nothing playing right now 1")
         }
     }
 
@@ -56,7 +56,7 @@ export default class PlayService {
             distube.stop(message)
             message.react("⏹️")
         } catch (err) {
-            return message.channel.send("There is nothing playing right now")
+            return message.channel.send("There is nothing playing right now 2")
         }
     }
 
@@ -169,7 +169,7 @@ export default class PlayService {
             distube.pause(message)
             message.react("⏸️")
         } catch (err) {
-            return message.channel.send("There is nothing playing right now")
+            return message.channel.send("There is nothing playing right now 3")
         }
     }
 
@@ -178,11 +178,12 @@ export default class PlayService {
             distube.shuffle(message)
             message.react("🔀")
         } catch (err) {
-            return message.channel.send("There is nothing playing right now")
+            return message.channel.send("There is nothing playing right now 4")
         }
     }
     static volume(message, volume) {
-        distube.setVolume(Number(volume))
+        const queue = distube.getQueue(message)
+        distube.setVolume(queue, Number(volume))
         message.channel.send(`Volume set to ${volume}%`)
     }
 
